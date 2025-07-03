@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Дашборд прийому ягід</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      max-width: 900px;
+      margin: 20px auto;
+      padding: 10px;
+      background: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .point-summary {
+      background: white;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      box-shadow: 0 0 6px #ccc;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    ul li {
+      padding: 3px 0;
+    }
+    .back__link{
+      font-size: 20px;
+      color: black;
+    }
+    .back__link:hover{
+      color: rgb(65, 65, 65);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+    <a class="back__link" href="index.html">головна</a>
+
+  <h1>Дашборд прийому ягід (в режимі реального часу)</h1>
+
+  <div id="summary-point1" class="point-summary">
+    <h2>Point 1</h2>
+    <p>Завантаження даних...</p>
+  </div>
+
+  <div id="summary-point2" class="point-summary">
+    <h2>Point 2</h2>
+    <p>Завантаження даних...</p>
+  </div>
+
+  <div id="summary-point3" class="point-summary">
+    <h2>Point 3</h2>
+    <p>Завантаження даних...</p>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+  <script>
+    // Встав сюди свої дані Firebase (копіюй з точок прийому)
+    const firebaseConfig = {
+            apiKey: "AIzaSyDX3PrhHPWWhjT7E1qFTBRAFBPCPKCGqa4",
+            authDomain: "berry-acceptance.firebaseapp.com",
+            databaseURL: "https://berry-acceptance-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "berry-acceptance",
+            storageBucket: "berry-acceptance.firebasestorage.app",
+            messagingSenderId: "642858110005",
+            appId: "1:642858110005:web:2d56e92251b2330d49f57c"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const points = ['point1', 'point2', 'point3'];
+
+    points.forEach(point => {
+      const container = document.getElementById(`summary-${point}`);
+
+      db.ref(`points/${point}/summary`).on('value', snapshot => {
+        const data = snapshot.val();
+
+        if (data) {
+          container.innerHTML = `
+            <h2>${point.toUpperCase()}</h2>
+            <p><b>Загальна вага:</b> ${data.totalWeight.toFixed(2)} кг</p>
+            <p><b>Загальна сума:</b> ${data.totalSum.toFixed(2)} грн</p>
+            <p><b>Загальна кількість ящиків:</b> ${data.totalBoxesCount}</p>
+            <h3>Кількість ящиків по ягодах:</h3>
+            <ul>
+              ${Object.entries(data.boxCounts || {}).map(([berry, count]) => `<li>${berry}: ${count}</li>`).join('')}
+            </ul>
+          `;
+        } else {
+          container.innerHTML = `<h2>${point.toUpperCase()}</h2><p>Дані відсутні</p>`;
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
